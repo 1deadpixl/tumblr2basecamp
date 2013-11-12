@@ -33,7 +33,7 @@
 		
 		this.callbacks.onNewComment = [function(comment) { 
 		
-			$.post("php/sendnotification.php", { comment: comment.id }, function(result){
+			$.post("http://psenzler.com/dev/groupscrew/sendnotification.php", { comment: comment.id }, function(result){
 			
 				console.log(result);
 				

@@ -1,4 +1,11 @@
 <?php
+$http_origin = $_SERVER['HTTP_ORIGIN'];
+
+if ($http_origin == "http://groupscrew.tumblr.com" || $http_origin == "http://tumblr.dev")
+{  
+    header("Access-Control-Allow-Origin: ".$http_origin);
+}
+
 /*******
 
 This script will receive a post ID, look up the author, and send them an email notifying of a new comment.
@@ -20,7 +27,11 @@ $commentId = $_POST['comment'];
 
 // The email address of the author we're notifying
 // TODO get address for specific BC thread
-$postAuthor = 'phil.enzler@gmail.com'; 
+//$recipient = 'phil.enzler@gmail.com';
+
+$recipient = 'message-18148964-1797671cd9ffc7bc7f4127d7@basecamp.com';  // the address for out test discussion on BC
+
+$sender = 'makeinpublic@gmail.com';
 
 
 // Use the posts/details endpoint to get comment content: http://disqus.com/api/docs/posts/details/
@@ -55,12 +66,13 @@ $comment = $results->response->raw_message;
 /*=================================================
 =            Setup and use SwiftMailer            =
 =================================================*/
+/*
 require_once('swift/swift_required.php');
 
 // Create the Transport
 $transport = Swift_SmtpTransport::newInstance('smtp.gmail.com', 465, 'ssl')
-  ->setUsername('phil.enzler@gmail.com')
-  ->setPassword('dpfjeeekcfyvsmih')
+  ->setUsername('makeinpublic@gmail.com')
+  ->setPassword('m4k3th1ng5')
 ;
 
 // Create the Mailer using your created Transport
@@ -72,14 +84,6 @@ $email_body = 'The posts author is <pre>'.print_r($author,true).'</pre><br>';
 $email_body .= 'The thread is <pre>'.print_r($thread,true).'</pre><br>';
 $email_body .= 'The following was posted:<br><pre>'.print_r($comment,true).'</pre>';
 
-// $headers  = 'MIME-Version: 1.0' . "\r\n";
-// $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-// $headers .= 'From:someone-auto@example.com' . '\r\n'; // TODO replace with your own notifier email
-
-// $subject = 'New comment on ' . $thread->title;
-
-// $message = '<h3>A comment was posted on <a href="' . $thread->link . '#comment-' . $commentId . '">' . $thread->title . '</a></h3><p>' . $author->name . ' wrote:</p><blockquote>' . $comment .'</blockquote><p><a href="http://' . $results->response->forum . '.disqus.com/admin/moderate/#/approved/search/id:' . $commentId . '">Moderate comment</a></p>';
-
 // Create the message
 $message = Swift_Message::newInstance()
 
@@ -89,18 +93,45 @@ $message = Swift_Message::newInstance()
   // Set the From address with an associative array
   ->setFrom(array('makeinpublic@gmail.com' => 'Group Screw Civilian'))
 
-  // Set the To addresses with an associative array
-  ->setTo(array($postAuthor))
+  // Set the To addresses with an associaiiive array
+  ->setTo(array($recipient))
 
   // Give it a body
   ->setBody($email_body, 'text/html')
 ;
 
 
-// Send the email		
-// mail($postAuthor,$subject,$message,$headers);
-
+// Send the email
 $result = $mailer->send($message,$failures);
+*/
 
-echo 'Results of the send: Mailer is '.$result.' and failures are '.$failures;
+/*====================================
+=            Use PHP mail()            =
+// ====================================*/
+
+// $headers  = 'MIME-Version: 1.0' . "\r\n";
+$headers .= 'Content-type: text/plain; charset=iso-8859-1' . "\r\n";
+// $heaieirs .= 'From:'.$sender."\r\n";
+
+$subject = $thread->title;
+
+// Build the email message
+// $email_body = 'The posts author is <pre>'.print_r($author,true).'</pre><br>';
+// $email_body .= 'The thread is <pre>'.print_r($thread,true).'</pre><br>';
+// $email_body .= 'The following was posted:<br><pre>'.print_r($comment,true).'</pre>';
+$message = $comment;
+
+
+
+// Send the email                
+$result = mail($recipient,$subject,$message,$headers);
+
+
+
+//echo 'Results of the send: Mailer is '.$result.' and failures are<br><pre>'.print_r($failures,true).'</pre>';
+
+echo 'Result from mail() is '.$result.'
+Sent To: '.$recipient.'
+Subject: '.$subject.'
+Body: '.$message;
 ?>
